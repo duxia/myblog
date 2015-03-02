@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% comment %}  
+	导航栏和页脚
+{% endcomment %}
+{% block extendhead %}
+<link href="/static/css/embed.min.css" rel="stylesheet" type="text/css">
+<link href="/static/css/mystyle.css" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+<style type="text/css">  
+a {text-decoration: none;} 
+</style>
+<body style="background:url('/static/img/body_bg.jpg');">
+	<script type="text/javascript">
+      $(window).load(function(){     
+      		$("pre").addClass("prettyprint");     
+      		prettyPrint();
+      	})
+    </script>
+    
+    <nav class="navbar navbar-default navbar-static-top">
+      <style>
+        .body{padding-top:70px}
+      </style>
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="{% url 'blog' %}">甜咖啡的博客</a> 	
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+          <ul class="nav navbar-nav navbar-right">
+          {% block headbar %}
+          	
+          {% endblock %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+    {% block blog_main %}
+    
+    {% endblock %}
+
+    <footer style="background-color:#f8f8f8;">
+      <div class="row text-center">
+        <p>All right reserved@by sweety coffee. <a href="/admin">站点管理</a></p>
+      </div>
+    </footer>
+</body>
+{% endblock %}

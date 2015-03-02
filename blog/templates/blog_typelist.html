@@ -1,0 +1,39 @@
+{% extends "blog_main.html" %} 
+
+{% block blogcontent %}
+<div class="col-md-12" id="toplist">
+<!-- 所在位置栏 -->
+<p>
+<ul class="breadcrumb lead">
+	<li><a href="{% url 'blog' %}"><span class="glyphicon glyphicon-home"></span> Blog</a></li>
+	<li class="active"><a href="{% url 'showTag' articles.0.articletype__typename %}">{{articles.0.articletype__typename }}</a></li>
+</ul>
+</p>
+<!-- 文章列表 -->
+	<ul id="article" class="list-group">
+		<li class="list-group-item"><a href="#">(顶)文章1</a></li>
+		<li class="list-group-item">(顶)文章2</li>
+		<li class="list-group-item">(顶)文章3</li>
+		<li class="list-group-item">(顶)文章4</li>
+		<li class="list-group-item">(顶)文章5</li>
+		{% for article in articles %}
+		<li class="list-group-item list-group-item-info">
+		<div class="row">
+			<div class="col-md-12">
+				<a class="btn btn-link" href="{% url 'showArticle' article.id %}"><h4>{{ article.title }}</h4></a>
+			</div>
+			<div class="col-md-12">
+				<small style="float:right">
+					<span class="label label-success"><span class="glyphicon glyphicon-tag"></span> {{ article.articletype__typename }}</span>
+					<span class="label label-success"><span class="glyphicon glyphicon-time"></span> {{ article.publishdate }}</span>
+					<span class="label label-success"><span class="glyphicon glyphicon-eye-open"></span> {{ article.clicknums }} 浏览</span>
+					<span class="label label-success"><span class="glyphicon glyphicon-comment"></span> {{ article.commentnums }} 评论</span>
+				</small>
+			</div>
+		</div>
+		</li> 
+		{% endfor %}
+	</ul>
+</div>
+
+{% endblock %}

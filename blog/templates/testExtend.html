@@ -1,0 +1,76 @@
+{% extends "blog_base.html" %}
+
+{% block blogcontent %}
+<script src="/static/zeroclipboard/ZeroClipboard.js"></script>
+<script type="text/javascript">
+ZeroClipboard.config({
+            moviePath: "/static/zeroclipboard/ZeroClipboard.swf",
+            hoverClass: "btn-clipboard-hover"
+        });
+$(document).ready(function(){
+  $("pre").each(function(){
+  	var b = '<div class="zeroclip"><span class="btn-clipboard">复制</span></div>';
+    $(this).before(b);
+    console.log(this.innerText);
+  });
+
+var client = new ZeroClipboard($("#d_clip_button"));
+console.log(client);
+client.on( "ready", function( readyEvent ) {
+  //alert( "ZeroClipboard SWF is ready!" );
+
+  client.on( "aftercopy", function( event ) {
+    // `this` === `client`
+    // `event.target` === the element that was clicked
+    event.target.style.display = "none";
+    alert("Copied text to clipboard: " + event.data["text/plain"] );
+  } ),
+  client.on("dataRequested", function(b) {
+            var c = $(this).parent().nextAll("pre").first();
+            console.log(c);
+            b.setText(c.text())
+        });
+} );
+
+var d = new ZeroClipboard($("btn-clipboard")),
+            e = $("#global-zeroclipboard-html-bridge");
+            
+        d.on("load", function() {
+            e.data("placement", "top").attr("title", "复制到剪贴板").tooltip()
+            console.log('aaaa');
+        }), d.on("dataRequested", function(b) {
+            var c = $(this).parent().nextAll("pre").first();
+            console.log(c);
+            b.setText(c.text())
+        }), d.on("complete", function() {
+            e.attr("title", "复制完成！").tooltip("fixTitle").tooltip("show").attr("title", "复制到剪贴板").tooltip("fixTitle")
+        }), d.on("noflash wrongflash", function() {
+            e.attr("title", "您的浏览器需要安装 Flash 插件").tooltip("fixTitle").tooltip("show")
+        });
+});
+</script>
+<button id="d_clip_button" onclick="gettext()" type="button" class="btn btn-primary">复制代码</button>
+<pre>
+#include 'stdio.h'
+
+void main()
+{
+	printf("hello world");
+}
+</pre>
+<hr>
+<pre id="fe_text">
+#include 'stdio.h'
+
+void main()
+{
+	printf("hello world");
+}
+</pre>
+
+<script type="text/javascript">
+function gettext(){
+	console.log("aaaa");
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,377 @@
+{% extends "blog_main.html" %} 
+{% comment %}  
+	正文内容页面
+{% endcomment %}
+{% block blogcontent %}
+<!-- 所在位置栏 -->
+<p>
+<ul class="breadcrumb lead">
+	<li><a href="{% url 'blog' %}"><small><span class="glyphicon glyphicon-home"></span></small> Blog</a></li>
+	<li><a href="{% url 'showTag' blog.articletype %}">{{ blog.articletype }}</a></li>
+	<li class="active">{{ blog.title }}</li>
+</ul>
+</p>
+<div class="panel panel-default">
+	<div class="panel-body">
+		<div class="col-md-12">
+			<h1>{% if blog.title %} {{ blog.title }} {% endif %}</h1>
+			<small> 
+				<span class="label label-success"><span class="glyphicon glyphicon-time"></span> {{ blog.publishdate }}</span> &nbsp;
+				<span class="label label-success"><span class="glyphicon glyphicon-tag"></span>  {{ blog.articletype }}</span> &nbsp;
+			</small>
+			<small style="float:right">
+				<span class="label label-success"><span class="glyphicon glyphicon-eye-open"></span> {{ blog.clicknums }}浏览</a></span> &nbsp;
+				<span class="label label-success"><span class="glyphicon glyphicon-comment"></span> <a href="#commentsarea">{{ nodes.count }}条评论</a></span>
+			</small>
+			<hr>
+		</div>
+		<div class="col-md-12">{{ blog.content|safe }}</div>
+		<div class="col-md-12 text-right">
+			{% if preArticle %}
+			<p>
+				<a href="{% url 'showArticle' preArticle.id %}" type="button" class="btn btn-link">{{ preArticle.title }}</a> 
+				<a href="{% url 'showArticle' preArticle.id %}" type="button" class="btn btn-primary">上一篇 <span class="glyphicon glyphicon-arrow-up"></span></a>
+			</p>
+			{% endif %} 
+			{% if nextArticle %}
+			<p>
+				<a href="{% url 'showArticle' nextArticle.id %}" type="button" class="btn btn-link">{{ nextArticle.title }}</a> 
+				<a href="{% url 'showArticle' nextArticle.id %}" type="button" class="btn btn-primary">下一篇 <span class="glyphicon glyphicon-arrow-down"></span></a>
+			</p>
+			{% endif %}
+		</div>
+		<!-- 评论行 -->
+		<div class="col-md-12">
+		<a name="commentsarea" id="commentsarea"></a>
+		<hr />
+		{% load mptt_tags %}
+			<div class="ds-thread" id="ds-thread">
+				<div id="ds-reset">
+					{% if not nodes %}
+					<ul class="ds-comments">
+						<li class="ds-post ds-post-placeholder">还没有评论，快来抢个沙发吧~~</li>
+					</ul>
+					{% endif %}
+					<div class="ds-comments-info">
+						<ul class="ds-comments-tabs">
+							<li class="ds-tab">
+								<a class="ds-comments-tab-duoshuo ds-current"><span class="ds-highlight">{{ nodes.count }}</span>条评论</a>
+							</li>
+						</ul>
+					</div>
+					<ul class="ds-comments">
+					{% recursetree nodes %}
+						<li class="ds-post">
+							<!-- 一级评论 -->
+							<div class="ds-post-self" id="{{ node.id }}">
+								<div class="ds-avatar">
+									{% if node.usericon %}
+									<img src="{{ node.usericon }}"></img>
+									{% else %}
+									<img src="/static/img/default_usericon.gif"></img>
+									{% endif %}
+								</div>
+								<div class="ds-comment-body">
+									<div class="ds-comment-header">{{ node.username }}</div>
+									<p>{{ node.usercomment }}</p>
+									<div class="ds-comment-footer ds-comment-actions text-right">
+										<span class="ds-time">{{ node.publicdate }}</span>
+										<a class="ds-post-reply" href="javascript:void(0);" onclick="insertreplybox({{ node.id }})"><span class="ds-icon ds-icon-reply"></span> 回复</a>
+									</div>
+								</div>
+							</div>
+							<!-- 二级评论 -->
+							{% if not node.is_leaf_node %}
+							<ul class="ds-children">
+								{{ children }}
+							</ul>
+							{% endif %}
+							<!-- 二级评论结束 -->
+						</li>
+					{% endrecursetree %}
+					</ul>
+				<!-- 登录锚点 -->
+				<a name="loginarea" id="loginarea"></a>
+				<!-- 登录错误信息框 -->
+				{% if error_msg %}
+				<div class="col-md-12">
+					<div class="alert alert-danger alert-dismissable">
+						<strong>{{ error_msg }}</strong>
+					</div>
+				</div>
+				{% endif %}
+				<!-- /.登录错误信息框 -->
+				<!-- 登录框 -->
+				<div class="ds-login-buttons">
+					{% if loginuser %}
+					<p>当前帐号:</p>
+					<div class="ds-social-links" style="width: 128px;">
+						<ul class="ds-service-list">
+							<li>
+								<p class="ds-more-services">{{ loginuser.username }}</p>
+							</li>
+							<li>
+								<form method="post">{% csrf_token %}
+									<input type="hidden" name="userlogout" value="logout"></input>
+									<button class="ds-more-services" type="submit">注销</button>
+								</form>
+							</li>
+						</ul>
+					</div>
+					{% else %}
+					<p>本站帐号:</p>
+					<div class="ds-social-links" style="width: 128px;">
+						<ul class="ds-service-list">
+							<li>
+								<a class="ds-more-services" data-toggle="modal" data-target="#loginmodel">登录</a>
+							</li>
+							<li>
+								<a class="ds-more-services" data-toggle="modal" data-target="#registermodel">注册</a>
+							</li>
+						</ul>
+					</div>
+					<p>第三方帐号登录:</p>
+					<div class="ds-social-links">
+						<ul class="ds-service-list">
+							<li>
+								<a class="ds-service-link ds-qq" href="https://graph.qq.com/oauth2.0/authorize">QQ登录</a>
+							</li>
+						</ul>
+					</div>
+					{% endif %}
+				</div>
+				<!-- /.登录框 -->
+					
+					
+				<!-- 评论回复框 -->
+				<div class="ds-replybox">
+					<a class="ds-avatar">
+						{% if loginuser.avatar %}
+						<img src="{{ loginuser.avatar }}"></img>
+						{% else %}
+						<img src="/static/img/default_usericon.gif"></img>
+						{% endif %}
+					</a>
+					<form method="post" onsubmit="return checksubmit(this)">{% csrf_token %}
+						<input type="hidden" name="article_id" value="{{ blog.id }}"></input>
+						<div class="ds-textarea-wrapper ds-rounded-top">
+							<textarea name="message" placeholder="说点什么吧..."></textarea>
+						</div>
+						<div class="ds-post-toolbar">
+							<div class="ds-post-options ds-gradient-bg">
+								<span class="ds-sync"></span>
+							</div>
+							<button class="ds-post-button" type="submit">发布</button>
+						</div>
+					</form>
+				</div>
+				<!-- /.评论回复框 -->
+				</div>
+			</div>
+		</div>
+		<!-- 评论行结束 -->
+		
+		<!-- 登录模态框（Modal） -->
+		<div class="modal fade" id="loginmodel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		   <div class="modal-dialog">
+		      <div class="modal-content">
+		         <div class="modal-header">
+		            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+		                  <span aria-hidden="true">&times;</span>
+		            </button>
+		            <h4 class="modal-title" id="myModalLabel">
+		               	登录
+		            </h4>
+		         </div>
+		         <div class="modal-body">
+		            	<!-- 登录表单 -->
+		            	<div class="container">
+			            	<div class="row">
+			            		<div class="col-md-12">
+					            	<form class="form-horizontal" role="form" action="" method="post" onsubmit="return checklogin(this)">{% csrf_token %}
+								        <div class="form-group">
+								        	<div class="col-sm-1">
+								            	<label class="control-label" for="inputEmail">邮箱</label>
+								            </div>
+								            <div class="col-sm-11">
+								                <input type="text" id="inputEmail" name="email" placeholder="邮箱">
+								            </div>
+								        </div>
+								        
+								        <div class="form-group">
+								        	<div class="col-sm-1">
+								            	<label class="control-label" for="inputPassword">密码</label>
+								            </div>
+								            <div class="col-sm-11">
+								                <input type="password" id="inputPassword" name="password" placeholder="密码">
+								            </div>
+								        </div>
+																	        
+								        <div class="form-group">
+								            <div class="col-sm-offset-1 col-sm-1">
+								                <button type="submit" class="btn">登录</button>
+								                <p>没有帐号? 立即<a href="javascript:void(0)" onclick="showregistermodel()">注册</a></p>
+								            </div>
+								        </div>
+								    </form>
+								</div>
+						    </div>
+					    </div>
+		            	<!-- /.登录表单 -->
+		         </div>
+		         <div class="modal-footer">
+		            <button type="button" class="btn btn-default" data-dismiss="modal">
+		            	关闭
+		            </button>
+		         </div>
+		      </div><!-- /.modal-content -->
+			</div><!-- /.modal -->
+		</div>
+		<!-- /.登录模态框（Modal） -->
+		
+		<!-- 注册模态框（Modal） -->
+		<div class="modal fade" id="registermodel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		   <div class="modal-dialog">
+		      <div class="modal-content">
+		         <div class="modal-header">
+		            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+		                  <span aria-hidden="true">&times;</span>
+		            </button>
+		            <h4 class="modal-title" id="myModalLabel">
+		               	用户注册
+		            </h4>
+		         </div>
+		         <div class="modal-body">
+		            	<!-- 注册表单 -->
+		            	<div class="container">
+			            	<div class="row">
+			            		<div class="col-md-12">
+					            	<form enctype="multipart/form-data" class="form-horizontal" role="form" action="" method="post" onsubmit="return checkregister(this)">{% csrf_token %}
+								        <div class="form-group">
+								        	<div class="col-sm-1">
+								            	<label class="control-label" for="inputEmail">邮箱</label>
+								            </div>
+								            <div class="col-sm-11">
+								                <input type="text" id="inputEmail" name="registeremail" placeholder="邮箱">
+								            </div>
+								        </div>
+								        
+								        <div class="form-group">
+								        	<div class="col-sm-1">
+								            	<label class="control-label" for="inputPassword">密码</label>
+								            </div>
+								            <div class="col-sm-11">
+								                <input type="password" id="inputPassword" name="registerpassword" placeholder="密码">
+								            </div>
+								        </div>
+								        
+								        <div class="form-group">
+								        	<div class="col-sm-1">
+								            	<label class="control-label" for="inputNickname">昵称</label>
+								            </div>
+								            <div class="col-sm-11">
+								                <input type="text" id="inputNickname" name="registernickname" placeholder="昵称">
+								            </div>
+								        </div>
+								        
+								        <div class="form-group">
+								        	<div class="col-sm-1">
+									      		<label class="control-label" for="inputfile">用户头像</label>
+									      	</div>
+									      	<div class="col-sm-11">
+									      		<input type="file" id="inputfile" name="inputfile">
+									      		<p class="help-block">您可以选择是否上传您的头像</p>
+									      	</div>
+									   	</div>
+									   	
+									   	<div class="form-group">
+									   		<div class="col-sm-1">
+									   			<label class="control-label" for="verifycode">验证码</label>
+									   		</div>
+									   		<div class="col-sm-2" id="verifycodearea">
+									   			{{ verifyform.captcha }}
+									   			{% csrf_token %}
+									   		</div>
+									   		<div class="col-sm-2">
+									   			{% if verifyform.captcha.errors %}
+									   			{{ verifyform.captcha.errors }}
+									   			{% else %}
+									   			<a href="javascript:void(0)" onclick="refreshverifycode(this)">看不清,换一张</a>
+									   			{% endif %}
+									   		</div>
+									   	</div>
+								        <div class="form-group">
+								            <div class="col-sm-offset-1 col-sm-11">
+								                <button type="submit" class="btn">注册</button>
+								            </div>
+								        </div>
+								    </form>
+								</div>
+						    </div>
+					    </div>
+		            	<!-- /.注册表单 -->
+		         </div>
+		         <div class="modal-footer">
+		            <button type="button" class="btn btn-default" data-dismiss="modal">
+		            	关闭
+		            </button>
+		         </div>
+		      </div><!-- /.modal-content -->
+			</div><!-- /.modal -->
+		</div>
+		<!-- /.注册模态框（Modal） -->
+		
+	</div>
+</div>
+<script src="/static/zeroclipboard/ZeroClipboard.js"></script>
+<script src="/static/js/myscript.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+  $("pre").each(function(){
+  	var b = '<div class="zero-clipboard"><span class="btn-clipboard">复制</span></div>';
+    $(this).before(b);
+  });
+  init();
+  {% if error_msg %}
+  location.hash="#loginarea";
+  {% endif %}
+});
+
+function insertreplybox(parent) {
+	foot = $("#"+parent).children("div.ds-comment-body").children("div.ds-comment-footer");
+	if ($(foot).hasClass("ds-reply-active")) {
+		$(foot).next().slideToggle(function(){
+			$(this).remove();
+		});//滑动隐藏后删除
+		$(foot).removeClass("ds-reply-active");
+	} else {
+		var toinsert = '<div class="ds-replybox ds-inline-replybox" style="display:none;"><a class="ds-avatar">';
+		{% if loginuser.avatar %}
+		toinsert += '<img src="{{ loginuser.avatar }}"></img>';
+		{% else %}
+		toinsert += '<img src="/static/img/default_usericon.gif"></img>';
+		{% endif %}
+		toinsert += '</a><form method="post" onsubmit="return checksubmit(this)">';
+		toinsert += "{% csrf_token %}";
+		toinsert += '<input type="hidden" name="article_id" value="{{ blog.id }}"></input>';
+		toinsert += '<input type="hidden" name="parent_id" value="'+parent+'"></input>';
+		toinsert += '<div class="ds-textarea-wrapper ds-rounded-top"><textarea name="message" placeholder="说点什么吧..."></textarea></div><div class="ds-post-toolbar"><div class="ds-post-options ds-gradient-bg"><span class="ds-sync"></span></div><button class="ds-post-button" type="submit">发布</button></div></form></div>'; 
+		$(".ds-reply-active").next().slideToggle(function(){
+			$(this).remove();
+		});//滑动隐藏后删除
+		$(".ds-reply-active").removeClass("ds-reply-active");//删除之前添加的'回复'按钮的class
+		$(foot).addClass("ds-reply-active");
+		$(foot).after(toinsert);
+		$(foot).next().slideToggle();
+	}
+}
+
+function refreshverifycode(data) {
+	var verifycol = $(data).parent().siblings("#verifycodearea");
+	$.get('{% url 'verifyCode' %}', function(callbackdata) {
+		verifycol.html(callbackdata);
+	});
+}
+</script>
+{% endblock %}
+

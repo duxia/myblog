@@ -1,0 +1,73 @@
+{% extends "base.html" %} 
+{% comment %} 导航栏和页脚 {% endcomment %} 
+{% block extendhead %}
+<link href="/static/css/mystyle.css" rel="stylesheet">
+{% endblock %} 
+{% block body %}
+<body>
+<nav class="navbar navbar-default navbar-static-top" style="margin-bottom: 0px;">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse"
+				data-target=".navbar-collapse">
+				<span class="sr-only">Toggle navigation</span> 
+				<span class="icon-bar"></span> 
+				<span class="icon-bar"></span> 
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="{% url 'blog' %}">甜咖啡的博客</a>
+		</div>
+		<div class="collapse navbar-collapse navbar-ex1-collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li class="active"><a href="{% url 'home' %}">Home</a></li>
+				<li><a href="{% url 'blog' %}">Blog</a></li>
+				<li><a href="https://github.com/duxia?tab=repositories" target="_blank">Code</a></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+	<!-- Indicators -->
+	<ol class="carousel-indicators">
+		<li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+	    <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+	    <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+	</ol>
+	<div class="carousel-inner">
+		<div class="item active">
+			<img src="/static/img/jackson.jpg" class="center-block img-responsive">
+			<div class="carousel-caption">
+				<h2></h2>
+				<p></p>
+			</div>
+		</div>
+		<div class="item">
+			<img src="/static/img/v.jpeg" class="center-block img-responsive">
+			<div class="carousel-caption">
+				<h2></h2>
+				<p></p>
+			</div>
+		</div>
+		<div class="item">
+			<img src="/static/img/joker.jpg" class="center-block img-responsive">
+			<div class="carousel-caption">
+				<h2></h2>
+				<p></p>
+			</div>
+		</div>
+	</div>
+	<a class="left carousel-control" href="#carousel-example-generic" data-slide="prev">
+		<span class="glyphicon glyphicon-chevron-left"></span>
+	</a>
+	<a class="right carousel-control" href="#carousel-example-generic" data-slide="next">
+		<span class="glyphicon glyphicon-chevron-right"></span>
+	</a>
+</div>
+
+<footer style="background-color: #f8f8f8;">
+	<div class="row text-center">
+		<p>All right reserved@by sweety coffee. contact me:226639265@qq.com</p>
+	</div>
+</footer>
+</body>
+{% endblock %}
