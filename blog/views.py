@@ -21,6 +21,7 @@ import os
 import time
 from blog.forms import CaptchaForm
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import make_password, check_password
 
 class RegisterLoginError(Exception):
     pass
@@ -200,10 +201,12 @@ def handleblogcontent(request,id=''):
                 if not email or not password:
                     raise RegisterLoginError("请输入邮箱和密码!")
                 
-                if not UserAuth.objects.filter(email=email, password=password).exists():
+                if not UserAuth.objects.filter(email=email).exists():
                     raise RegisterLoginError("无效的账户,请重新输入!")
                 
-                user = UserAuth.objects.get(email=email, password=password)
+                user = UserAuth.objects.get(email=email)
+                if not check_password(password,user.password):
+                    raise RegisterLoginError("密码错误!")
                 return user
             try:
                 user = _login()
@@ -256,7 +259,7 @@ def handleblogcontent(request,id=''):
                     usericon = '/media/usericons/'+name #用户头像的相对地址(用于前端显示)
                     pathname = os.path.join(settings.MEDIA_ROOT,'usericons',name) #用户目录的绝对地址(用于存储)
                     img.save(pathname)
-                
+                password = make_password(password,None,'pbkdf2_sha256')
                 user = UserAuth.objects.create(email=email, password=password)
                 if usericon:
                     UserInfo.objects.create(user_id=user.user_id, username=username,avatar=usericon)
