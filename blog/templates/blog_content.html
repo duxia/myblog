@@ -247,36 +247,46 @@
 			            	<div class="row">
 			            		<div class="col-md-12">
 					            	<form enctype="multipart/form-data" class="form-horizontal" role="form" action="" method="post" onsubmit="return checkregister(this)">{% csrf_token %}
-								        <div class="form-group">
+								        <div class="form-group has-feedback">
 								        	<div class="col-sm-1">
-								            	<label class="control-label" for="inputEmail">邮箱</label>
+								            	<label for="inputEmail">邮箱</label>
 								            </div>
-								            <div class="col-sm-11">
-								                <input type="text" id="inputEmail" name="registeremail" placeholder="邮箱">
+								            <div class="col-sm-3">
+								                <input type="text" class="form-control" id="inputEmail" name="registeremail" placeholder="邮箱" onfocus="checkregistererrormsg(this)" onblur="checkemailvalid(this)">
+								            </div>
+								            
+								        </div>
+								        
+								        <div class="form-group has-feedback">
+								        	<div class="col-sm-1">
+								            	<label for="inputPassword">密码</label>
+								            </div>
+								            <div class="col-sm-3">
+								                <input type="password" class="form-control" id="inputPassword" name="registerpassword" placeholder="请输入您的密码" onfocus="checkregistererrormsg(this)">
+								            </div>
+								        </div>
+								        
+								        <div class="form-group has-feedback">
+								        	<div class="col-sm-1">
+								            	<label for="inputPassword">密码确认</label>
+								            </div>
+								            <div class="col-sm-3">
+								                <input type="password" class="form-control" id="inputPassword2" name="registerpassword2" placeholder="再次输入密码" onfocus="checkregistererrormsg(this)" onblur="checkpasswordvalid(this)">
+								            </div>
+								        </div>
+								        
+								        <div class="form-group has-feedback">
+								        	<div class="col-sm-1">
+								            	<label for="inputNickname">昵称</label>
+								            </div>
+								            <div class="col-sm-3">
+								                <input type="text" class="form-control" id="inputNickname" name="registernickname" placeholder="昵称" onfocus="checkregistererrormsg(this)" onblur="checknicknamevalid(this)">
 								            </div>
 								        </div>
 								        
 								        <div class="form-group">
 								        	<div class="col-sm-1">
-								            	<label class="control-label" for="inputPassword">密码</label>
-								            </div>
-								            <div class="col-sm-11">
-								                <input type="password" id="inputPassword" name="registerpassword" placeholder="密码">
-								            </div>
-								        </div>
-								        
-								        <div class="form-group">
-								        	<div class="col-sm-1">
-								            	<label class="control-label" for="inputNickname">昵称</label>
-								            </div>
-								            <div class="col-sm-11">
-								                <input type="text" id="inputNickname" name="registernickname" placeholder="昵称">
-								            </div>
-								        </div>
-								        
-								        <div class="form-group">
-								        	<div class="col-sm-1">
-									      		<label class="control-label" for="inputfile">用户头像</label>
+									      		<label for="inputfile">用户头像</label>
 									      	</div>
 									      	<div class="col-sm-11">
 									      		<input type="file" id="inputfile" name="inputfile">
@@ -284,9 +294,9 @@
 									      	</div>
 									   	</div>
 									   	
-									   	<div class="form-group">
+									   	<div class="form-group has-feedback">
 									   		<div class="col-sm-1">
-									   			<label class="control-label" for="verifycode">验证码</label>
+									   			<label for="verifycode">验证码</label>
 									   		</div>
 									   		<div class="col-sm-2" id="verifycodearea">
 									   			{{ verifyform.captcha }}
@@ -332,6 +342,10 @@ $(document).ready(function(){
     $(this).before(b);
   });
   init();
+  $("#id_captcha_1").addClass("form-control");//验证码样式
+  $("form").delegate("#id_captcha_1","focus",function(data){
+  	checkregistererrormsg(data.target);
+  });
   {% if error_msg %}
   location.hash="#loginarea";
   {% endif %}
@@ -366,12 +380,6 @@ function insertreplybox(parent) {
 	}
 }
 
-function refreshverifycode(data) {
-	var verifycol = $(data).parent().siblings("#verifycodearea");
-	$.get('{% url 'verifyCode' %}', function(callbackdata) {
-		verifycol.html(callbackdata);
-	});
-}
 </script>
 {% endblock %}
 

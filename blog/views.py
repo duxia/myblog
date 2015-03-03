@@ -20,6 +20,7 @@ from myblog import settings
 import os
 import time
 from blog.forms import CaptchaForm
+from django.views.decorators.csrf import csrf_exempt
 
 class RegisterLoginError(Exception):
     pass
@@ -264,10 +265,6 @@ def handleblogcontent(request,id=''):
                 return user
               
             try:
-                verifyform = CaptchaForm(request.POST)
-                if not verifyform.is_valid():
-                    verifyform = CaptchaForm()
-                    raise RegisterLoginError("验证码错误!")
                 user = _register()
                 request.session['uid'] = user.user_id
                 response = HttpResponseRedirect(reverse('showArticle',args=[id])+'#loginarea')
@@ -303,9 +300,29 @@ def handleblogcontent(request,id=''):
                               context_instance=RequestContext(request))
 
 # 验证码ajax请求
+@csrf_exempt
 def handleverifycode(request):
-    verifyform = CaptchaForm()
-    return HttpResponse(verifyform)
+    if request.method == 'POST':
+        verifyform = CaptchaForm(request.POST)
+        if not verifyform.is_valid():
+            return HttpResponse('invalid')
+        else:
+            return HttpResponse('valid')
+    else:
+        verifyform = CaptchaForm()
+        return HttpResponse(verifyform)
+
+# 验证email是否已经注册
+@csrf_exempt
+def handleverifyemail(request):
+    if request.method == 'POST':
+        if 'email' in request.POST and request.POST['email']: #注册
+            email = request.POST.get('email', None)
+            if not email:
+                return HttpResponse('Empty')
+            if UserAuth.objects.filter(email=email).exists():
+                return HttpResponse(False)
+        return HttpResponse(True)
 
 def handletest(request):
     return render_to_response('blog_main.html')

@@ -53,7 +53,7 @@ function checksubmit(form){
 	if (username){
 		return true;//用户已登录
 	} else {
-		alert("请先登录!");
+		$("#loginmodel").modal('show');
 	}
 	return false;
 }
@@ -66,23 +66,126 @@ function checklogin(form){
 	return true;
 }
 
-function checkregister(form){
+
+//检查注册信息
+function showregistermsg(objself,classname,msginfo){
+	if (!objself.parent().parent().hasClass(classname)) {
+		if (classname == 'has-error'){
+			var msg='<span class="glyphicon glyphicon-remove form-control-feedback"></span>';
+			msg += '<label class="control-label" for="inputEmail">'+msginfo+'</label>';
+		} else if (classname == 'has-success'){
+			var msg='<span class="glyphicon glyphicon-ok form-control-feedback"></span>';
+		} else {
+			var msg = '';
+		}
+		objself.after(msg);
+		objself.parent().parent().addClass(classname);
+	}
+}
+function checkregistererrormsg(inputobj){
+	$(inputobj).nextAll().remove();
+	if ($(inputobj).parent().parent().hasClass("has-error")){
+		$(inputobj).parent().parent().removeClass("has-error");
+	} 
+	if ($(inputobj).parent().parent().hasClass("has-success")){
+		$(inputobj).parent().parent().removeClass("has-success");
+	} 
+}
+function checkregister(form){//提交注册表单之前验证
 	if (form.registeremail.value == ""){
-		alert("邮箱不能为空!");
+		showregistermsg($(form.registeremail),"has-error","邮箱不能为空!");
 		return false;
 	}
 	if (form.registerpassword.value == ""){
-		alert("密码不能为空!");
+		showregistermsg($(form.registerpassword),"has-error","密码不能为空!");
+		return false;
+	}
+	if (form.registerpassword.value != form.registerpassword2.value){
+		showregistermsg($(form.registerpassword),"has-error","两次输入的密码不一致!");
 		return false;
 	}
 	if (form.registernickname.value == ""){
-		alert("昵称不能为空!");
+		showregistermsg($(form.registernickname),"has-error","昵称不能为空!");
 		return false;
 	}
-	return true; 
+	if(form.captcha_1.value == ""){
+		showregistermsg($(form.captcha_1),"has-error","未输入验证码!");
+		return false;
+	} else {
+		//console.log($('#verifycodearea').parent().parent().serialize());
+		var captcha_0 = $('#verifycodearea').children('#id_captcha_0').val();
+		var captcha_1 = $('#verifycodearea').children('#id_captcha_1').val();
+		$.ajax({
+			type: "POST",
+			url:'/account/verifycode/',
+			data:'captcha_0='+captcha_0+'&captcha_1='+captcha_1,
+			async: false,
+			error: function(request) {
+                alert("Connection error");
+            },
+            success: function(callbackdata) {
+            	if (callbackdata == 'invalid'){
+            		refreshverifycode();
+            		showregistermsg($('#verifycodearea').children('#id_captcha_1'),"has-error","验证码错误!");
+            		return false;
+            	} else if (callbackdata == 'valid'){
+            		form.submit();
+            		return true;
+            	}
+                console.log(callbackdata);
+            }
+		});
+	}
+	return false;
+}
+function checkemailvalid(inputobj){
+	if (inputobj.value){
+		$.post('/account/verifyemail/',{email:inputobj.value},function(callbackdata){
+			if (callbackdata == 'True') {
+				showregistermsg($(inputobj),"has-success","");
+				//alert("true");
+			} else if (callbackdata == 'False'){
+				showregistermsg($(inputobj),"has-error","邮箱已存在!");
+				//alert("False");
+			} else {
+				showregistermsg($(inputobj),"has-error","请填入邮箱!");
+				//alert("Empty");
+			}
+		});
+	}
+}
+function checkpasswordvalid(inputobj){
+	if (inputobj.value){
+		var prevInputobj = $(inputobj).parent().parent().prev().find("#inputPassword");//前一次输入的密码
+		if(inputobj.value != prevInputobj.val()){
+			showregistermsg($(inputobj),"has-error","两次密码不一致!");
+			//alert("两次输入不一致");
+		} else {
+			showregistermsg($(inputobj),"has-success","");
+			showregistermsg(prevInputobj,"has-success","");
+		}
+	}
+}
+function checknicknamevalid(inputobj){
+	if (inputobj.value){
+		showregistermsg($(inputobj),"has-success","");
+	}
 }
 
 function showregistermodel() {
 	$("#loginmodel").modal('hide');
 	$("#registermodel").modal('show');
+}
+
+function refreshverifycode() {
+	var verifycol = $("#verifycodearea");
+	$.ajax({
+		type: "GET",
+		url: '/account/verifycode/',
+		async: false,
+		success: function(callbackdata) {
+			verifycol.html(callbackdata);//callback为html对象
+			$(verifycol).children("#id_captcha_1").addClass("form-control");
+		}
+	});
 }
