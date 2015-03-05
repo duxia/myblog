@@ -22,6 +22,7 @@ import time
 from blog.forms import CaptchaForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password, check_password
+import re
 
 class RegisterLoginError(Exception):
     pass
@@ -54,25 +55,16 @@ def callback(request,sitename):
 
 #博客列表主页面
 def handleblogmain(request):
-    articles = article.objects.values('id','title','articletype__typename','publishdate','istop','clicknums')
-    articletypes = articletypeList.objects.all()
+    articles = article.objects.values('id','title','articletype__typename','publishdate','istop','clicknums','commentnums')
+    # =======================右边栏显示============================
+    articletypes = articletypeList.objects.all().order_by('typename')
     toparticlelist=articles.order_by('-publishdate')[0:5] #右边栏最新文章
-    topviewlist = articles.order_by('clicknums')[0:10] #右边栏阅读排行
+    topviewlist = articles.order_by('-clicknums')[0:10] #右边栏阅读排行
+    topcommentlist = articles.order_by('-commentnums')[0:5] #右边栏评论排行
     recentcomments = comment.objects.values('username','usercomment','parentarticle__title','parentarticle__id').order_by('-publicdate')[0:5] #最新评论
-    #将文章和所对应的评论表关联(获取评论数)
-    def _make_article_info(_article):
-        info = {}
-        info['id'] = _article['id']
-        info['title'] = _article['title']
-        info['articletype__typename'] = _article['articletype__typename']
-        info['publishdate'] = _article['publishdate']
-        info['istop'] = _article['istop']
-        info['clicknums'] = _article['clicknums']
-        info['commentnums'] = comment.objects.filter(parentarticle=_article['id']).count()
-        return info
-        
-    articles = map(_make_article_info, articles)
-
+    # ==========================================================
+    articles = articles.order_by('-istop','-publishdate') #按照置顶和时间排序
+    
     paginator=PaginatorPro(articles,10)#分页器
     try:
         page = int(request.GET.get('page','1'))
@@ -94,31 +86,25 @@ def handleblogmain(request):
                                'articletypes':articletypes,
                                'toparticlelist':toparticlelist,
                                'topviewlist':topviewlist,
+                               'topcommentlist':topcommentlist,
                                'showFirstAndLast':showFirstAndLast,
                                'recentcomments':recentcomments,},)
 
 #文章分类列表主页面
 def handletags(request,tags=''):
     try:
-        articles = article.objects.filter(articletype__typename=tags).values('id','title','articletype__typename','publishdate','clicknums')#orm查询
+        articles = article.objects.filter(articletype__typename=tags).values('id','title','articletype__typename','publishdate','clicknums','commentnums')#orm查询
     except Exception:
         raise Http404
-    articletypes = articletypeList.objects.all()
-    toparticlelist=article.objects.values('id','title').order_by('-publishdate')[0:5] #右边栏最新文章
-    topviewlist = articles.order_by('clicknums')[0:10] #右边栏阅读排行
+    # =======================右边栏显示============================
+    articletypes = articletypeList.objects.all().order_by('typename')
+    allarticles = article.objects.values('id','title') #取出所有文章id和title
+    toparticlelist= allarticles.order_by('-publishdate')[0:5] #右边栏最新文章
+    topviewlist = allarticles.order_by('clicknums')[0:10] #右边栏阅读排行
+    topcommentlist = allarticles.order_by('-commentnums')[0:5] #右边栏评论排行
     recentcomments = comment.objects.values('username','usercomment','parentarticle__title','parentarticle__id').order_by('-publicdate')[0:5] #最新评论
-    #将文章和所对应的评论表关联(获取评论数)
-    def _make_article_info(_article):
-        info = {}
-        info['id'] = _article['id']
-        info['title'] = _article['title']
-        info['articletype__typename'] = _article['articletype__typename']
-        info['publishdate'] = _article['publishdate']
-        info['clicknums'] = _article['clicknums']
-        info['commentnums'] = comment.objects.filter(parentarticle=_article['id']).count()
-        return info
-        
-    articles = map(_make_article_info, articles)
+    # ==========================================================
+    articles = articles.order_by('-publishdate')    
     
     paginator=PaginatorPro(articles,10)#分页器
     try:
@@ -141,6 +127,7 @@ def handletags(request,tags=''):
                                'articletypes':articletypes,
                                'toparticlelist':toparticlelist,
                                'topviewlist':topviewlist,
+                               'topcommentlist':topcommentlist,
                                'showFirstAndLast':showFirstAndLast,
                                'recentcomments':recentcomments},)
 
@@ -150,13 +137,16 @@ def handleblogcontent(request,id=''):
         blogobject = article.objects.get(id=id) #取出id对应的文章
     except Exception:
         raise Http404
-    blogobject.clicknums += 1 #评论数+1
+    blogobject.clicknums += 1 #浏览数+1
     blogobject.save()
+    # =======================右边栏显示============================
     articletypes = articletypeList.objects.all() #文章分类
-    articles = article.objects.values('id','title','clicknums')
+    articles = article.objects.values('id','title','clicknums','commentnums')
     toparticlelist= articles.order_by('-publishdate')[0:5] #右边栏最新文章
     topviewlist = articles.order_by('clicknums')[0:10] #右边栏阅读排行
+    topcommentlist = articles.order_by('-commentnums')[0:5] #右边栏评论排行
     recentcomments = comment.objects.values('username','usercomment','parentarticle__title','parentarticle__id').order_by('-publicdate')[0:5] #最新评论
+    # ==========================================================
     sameTypeArticle = articles.values('id','title').filter(articletype=blogobject.articletype).order_by('-publishdate') #取出和本文相同类型的文章(的id和title即可)
     sameTypeArticle=list(sameTypeArticle) #列表化
     index = sameTypeArticle.index({'id':blogobject.id,'title':blogobject.title}) #取出本文在相同文章列表中的位置
@@ -181,6 +171,10 @@ def handleblogcontent(request,id=''):
     if request.method == 'POST':
         if 'message' in request.POST and request.POST['message']: #提交评论
             message = request.POST['message']
+            message = re.sub(r'\<', r'&lt;', message) #正则处理表情,换行等
+            message = re.sub(r'\>', r'&gt;', message)
+            message = re.sub(r'\n', r'<br/>', message)
+            message = re.sub(r'\[em_([0-9]*)\]', r'<img src="/static/img/qqface/\1.gif" border="0" />', message)
             usrinfo = UserInfo.objects.get(user_id=request.siteuser.id)
             usrname = usrinfo.username
             usricon = usrinfo.avatar
@@ -192,6 +186,8 @@ def handleblogcontent(request,id=''):
             comment.objects.create(username=usrname,usericon=usricon,usercomment=message,
                                    parentarticle=article.objects.get(id=request.POST['article_id']),
                                    parent=parentcomment,)
+            blogobject.commentnums += 1 #评论数+1
+            blogobject.save()
             return HttpResponseRedirect(reverse('showArticle',args=id)+'#commentsarea') #防止重复提交
         
         if 'email' in request.POST and request.POST['email']: #提交登录
@@ -221,6 +217,7 @@ def handleblogcontent(request,id=''):
                     'articletypes':articletypes,
                     'toparticlelist':toparticlelist,
                     'topviewlist':topviewlist,
+                    'topcommentlist':topcommentlist,
                     'preArticle':preArticle,
                     'nextArticle':nextArticle,
                     'nodes':nodes,'error_msg': e,},
@@ -280,6 +277,7 @@ def handleblogcontent(request,id=''):
                     'articletypes':articletypes,
                     'toparticlelist':toparticlelist,
                     'topviewlist':topviewlist,
+                    'topcommentlist':topcommentlist,
                     'preArticle':preArticle,
                     'nextArticle':nextArticle,
                     'nodes':nodes,
@@ -294,6 +292,7 @@ def handleblogcontent(request,id=''):
                                'articletypes':articletypes,
                                'toparticlelist':toparticlelist,
                                'topviewlist':topviewlist,
+                               'topcommentlist':topcommentlist,
                                'preArticle':preArticle,
                                'nextArticle':nextArticle,
                                'nodes':nodes,

@@ -41,8 +41,19 @@ class articletypeListAdmin(admin.ModelAdmin):
             obj.articleNums=0 #将添加的文章类型数量默认为0
         obj.save()
         
+class commentAdmin(admin.ModelAdmin):    
+    list_display = ('username','usercomment','parentarticle')
+    search_fields = ('username','usercomment',)
+    ordering = ('parentarticle','publicdate',)
+    fields = ('username','usercomment','parentarticle')
+    def delete_model(self, request, obj):
+        parentarticle = article.objects.get(title=obj.parentarticle)
+        parentarticle.commentnums = F('commentnums') - 1
+        parentarticle.save()
+        obj.delete()
     
 admin.site.register(article, articleAdmin)
 admin.site.register(articletypeList,articletypeListAdmin)
 #评论
-admin.site.register(comment,MPTTModelAdmin)
+#admin.site.register(comment,MPTTModelAdmin)
+admin.site.register(comment,commentAdmin)

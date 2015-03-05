@@ -32,6 +32,14 @@
         });
 	});
 }
+//评论模块初始化
+$(function(){
+	$('.ds-add-emote').qqFace({
+		id : 'ds-smilies-tooltip', 
+		assign:'saytext', 
+		path:'/static/img/qqface/'	//表情存放的路径
+	});
+});
 
 function getCookie(cookieName) {
     var strCookie = document.cookie;
@@ -57,6 +65,7 @@ function checksubmit(form){
 	}
 	return false;
 }
+
 
 function checklogin(form){
 	if (form.email.value == "" || form.password.value == ""){

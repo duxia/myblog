@@ -15,14 +15,21 @@
 	<div class="panel-body">
 		<div class="col-md-12">
 			<h1>{% if blog.title %} {{ blog.title }} {% endif %}</h1>
-			<small> 
-				<span class="label label-success"><span class="glyphicon glyphicon-time"></span> {{ blog.publishdate }}</span> &nbsp;
-				<span class="label label-success"><span class="glyphicon glyphicon-tag"></span>  {{ blog.articletype }}</span> &nbsp;
-			</small>
-			<small style="float:right">
+			<div class="row">
+			<div class="col-md-3">
+				<small> 
+					<span class="label label-success"><span class="glyphicon glyphicon-time"></span> {{ blog.publishdate }}</span> &nbsp;
+					<span class="label label-success"><span class="glyphicon glyphicon-tag"></span>  {{ blog.articletype }}</span> &nbsp;
+				</small>
+			</div>
+			<div class="col-md-6"></div>
+			<div class="col-md-3">
+			<small>
 				<span class="label label-success"><span class="glyphicon glyphicon-eye-open"></span> {{ blog.clicknums }}浏览</a></span> &nbsp;
-				<span class="label label-success"><span class="glyphicon glyphicon-comment"></span> <a href="#commentsarea">{{ nodes.count }}条评论</a></span>
+				<span class="label label-success"><span class="glyphicon glyphicon-comment"></span> <a href="#commentsarea">{{ blog.commentnums }}条评论</a></span>
 			</small>
+			</div>
+			</div>
 			<hr>
 		</div>
 		<div class="col-md-12">{{ blog.content|safe }}</div>
@@ -55,7 +62,7 @@
 					<div class="ds-comments-info">
 						<ul class="ds-comments-tabs">
 							<li class="ds-tab">
-								<a class="ds-comments-tab-duoshuo ds-current"><span class="ds-highlight">{{ nodes.count }}</span>条评论</a>
+								<a class="ds-comments-tab-duoshuo ds-current"><span class="ds-highlight">{{ blog.commentnums }}</span>条评论</a>
 							</li>
 						</ul>
 					</div>
@@ -72,8 +79,9 @@
 									{% endif %}
 								</div>
 								<div class="ds-comment-body">
-									<div class="ds-comment-header">{{ node.username }}</div>
-									<p>{{ node.usercomment }}</p>
+									<div class="ds-comment-header">
+										<span class="ds-user-name ds-highlight">{{ node.username }}</span></div>
+									<p>{{ node.usercomment|safe }}</p>
 									<div class="ds-comment-footer ds-comment-actions text-right">
 										<span class="ds-time">{{ node.publicdate }}</span>
 										<a class="ds-post-reply" href="javascript:void(0);" onclick="insertreplybox({{ node.id }})"><span class="ds-icon ds-icon-reply"></span> 回复</a>
@@ -155,13 +163,16 @@
 					<form method="post" onsubmit="return checksubmit(this)">{% csrf_token %}
 						<input type="hidden" name="article_id" value="{{ blog.id }}"></input>
 						<div class="ds-textarea-wrapper ds-rounded-top">
-							<textarea name="message" placeholder="说点什么吧..."></textarea>
+							<textarea name="message" id="saytext" class="saytext" placeholder="说点什么吧..."></textarea>
 						</div>
 						<div class="ds-post-toolbar">
 							<div class="ds-post-options ds-gradient-bg">
 								<span class="ds-sync"></span>
 							</div>
-							<button class="ds-post-button" type="submit">发布</button>
+							<button class="ds-post-button" type="submit" >发布</button>
+							<div class="ds-toolbar-buttons">
+								<a class="ds-toolbar-button ds-add-emote" title="插入表情" href="javascript:void(0)"></a>
+							</div>
 						</div>
 					</form>
 				</div>
@@ -334,6 +345,7 @@
 	</div>
 </div>
 <script src="/static/zeroclipboard/ZeroClipboard.js"></script>
+<script type="text/javascript" src="/static/js/jquery.qqFace.js"></script>
 <script src="/static/js/myscript.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
@@ -369,7 +381,7 @@ function insertreplybox(parent) {
 		toinsert += "{% csrf_token %}";
 		toinsert += '<input type="hidden" name="article_id" value="{{ blog.id }}"></input>';
 		toinsert += '<input type="hidden" name="parent_id" value="'+parent+'"></input>';
-		toinsert += '<div class="ds-textarea-wrapper ds-rounded-top"><textarea name="message" placeholder="说点什么吧..."></textarea></div><div class="ds-post-toolbar"><div class="ds-post-options ds-gradient-bg"><span class="ds-sync"></span></div><button class="ds-post-button" type="submit">发布</button></div></form></div>'; 
+		toinsert += '<div class="ds-textarea-wrapper ds-rounded-top"><textarea name="message" id="childsaytext" class="saytext" placeholder="说点什么吧..."></textarea></div><div class="ds-post-toolbar"><div class="ds-post-options ds-gradient-bg"><span class="ds-sync"></span></div><button class="ds-post-button" type="submit">发布</button><div class="ds-toolbar-buttons"><a class="ds-toolbar-button ds-add-emote" title="插入表情"></a></div></div></form></div>'; 
 		$(".ds-reply-active").next().slideToggle(function(){
 			$(this).remove();
 		});//滑动隐藏后删除
@@ -377,6 +389,11 @@ function insertreplybox(parent) {
 		$(foot).addClass("ds-reply-active");
 		$(foot).after(toinsert);
 		$(foot).next().slideToggle();
+		$('.ds-add-emote').qqFace({//初始化表情框
+			id : 'ds-smilies-tooltip', 
+			assign:'childsaytext', 
+			path:'/static/img/qqface/'	//表情存放的路径
+		});
 	}
 }
 

@@ -68,10 +68,12 @@
 		<div class="col-md-3">
 			<div class="col-md-12">
 				<form class="form-inline" role="form">
-					<div class="form-group">
-						<label class="sr-only" for="name">名称</label> <input type="text"
-							class="form-control" id="search">
-						<button type="submit" class="btn btn-primary btn-xs">搜索</button>
+					<div class="input-group">
+						<label class="sr-only" for="name">名称</label> 
+						<input type="text" class="form-control" id="search">
+						<span class="input-group-btn">
+							<button type="submit" class="btn btn-primary">搜索</button>
+						</span>
 					</div>
 				</form>
 			</div>
@@ -82,7 +84,7 @@
 						<h4 class="panel-title">博客公告</h4>
 					</div>
 					<div class="panel-body">
-						<img src="/static/img/headicon.jpg" class="center-block img-responsive img-thumbnail">
+						<img src="/static/img/headicon.png" class="center-block img-responsive img-thumbnail">
 						<p class="text-center">甜咖啡</p>
 						<hr>
 						<p>欢迎大家来到我的博客，和我交流你的心得，有任何问题欢迎大家加我QQ(226639265)讨论。</p>
@@ -140,6 +142,24 @@
 					</div>
 				</div>
 			</div>
+			<!-- 评论排行 -->
+			<div class="col-md-12">
+				<div class="panel panel-primary">
+					<div class="panel-heading">
+						<h4 class="panel-title">评论排行</h4>
+					</div>
+					<div class="panel-body">
+						<ul class="list-group">
+							{% for article in topcommentlist %}
+                  			<li class="list-group-item">
+                  				<a href="{% url 'showArticle' article.id %}">{{ article.title }}</a>
+                  				<span class="badge"><span class="glyphicon glyphicon-comment"></span>{{ article.commentnums }}</span>
+                  			</li>
+                  			{% endfor %}
+						</ul>
+					</div>
+				</div>
+			</div>
 			<!-- 最新评论 -->
 			<div class="col-md-12">
 				<div class="panel panel-primary">
@@ -154,7 +174,7 @@
 	                  				<a href="{% url 'showArticle' comment.parentarticle__id %}">{{ comment.parentarticle__title }}</a>
 	                  			</p>
 	                  			<p style="text-overflow:ellipsis;overflow:hidden;height: 60px;word-wrap:break-word;">
-	                  				<span class="label label-default">{{ comment.username }}</span>:<small>{{ comment.usercomment }}</small>
+	                  				<span class="label label-default">{{ comment.username }}</span>:<small>{{ comment.usercomment|safe }}</small>
 	                  			</p>
                   			</li>
                   			{% endfor %}

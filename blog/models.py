@@ -25,6 +25,7 @@ class article(models.Model):
     articletype = models.ForeignKey(articletypeList)
     istop = models.BooleanField(default=False)
     clicknums = models.IntegerField(default=0)
+    commentnums = models.IntegerField(default=0)
     
     class Meta:
         verbose_name = '文章'
