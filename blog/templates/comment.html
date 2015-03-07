@@ -1,0 +1,39 @@
+<li class="ds-post">
+	<!-- 一级评论 -->
+	<div class="ds-post-self" id="comments_id_{{ node.id }}">
+		<div class="ds-avatar">
+			{% if node.usericon %}
+			<img src="{{ node.usericon }}"></img>
+			{% else %}
+			<img src="/static/img/default_usericon.gif"></img>
+			{% endif %}
+		</div>
+		<div class="ds-comment-body">
+			<div class="ds-comment-header">
+				<span class="ds-user-name ds-highlight">
+					{{ node.username }}
+				</span>
+			</div>
+			<p>
+				{{ node.usercomment|safe }}
+			</p>
+			<div class="ds-comment-footer ds-comment-actions text-right">
+				<span class="ds-time">
+					{{ node.publicdate }}
+				</span>
+				<a class="ds-post-reply" href="javascript:void(0);" onclick="insertreplybox({{ node.id }})">
+					<span class="ds-icon ds-icon-reply">
+					</span>
+					回复
+				</a>
+			</div>
+		</div>
+	</div>
+	<!-- 二级评论 -->
+	{% if not node.is_leaf_node %}
+	<ul class="ds-children">
+		{{ children }}
+	</ul>
+	{% endif %}
+	<!-- 二级评论结束 -->
+</li>

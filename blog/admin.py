@@ -5,14 +5,14 @@ from blog.models import article, articletypeList, comment
 from mptt.admin import MPTTModelAdmin
 
 # Register your models here.
-class commentInline(admin.TabularInline):
+class commentInline(admin.StackedInline):
     model = comment
     
 class articleAdmin(admin.ModelAdmin):
     list_display = ('title','articletype','publishdate',)
     search_fields = ('title','articletype',)
-    ordering = ('publishdate',)
-    fields = ('title','content','articletype','istop')
+    ordering = ('-publishdate',)
+    fields = ('title','content','articletype','istop','clicknums','commentnums',)
     inlines = [commentInline,]
     #自定义save函数
     def save_model(self, request, obj, form, change):
@@ -41,7 +41,7 @@ class articletypeListAdmin(admin.ModelAdmin):
             obj.articleNums=0 #将添加的文章类型数量默认为0
         obj.save()
         
-class commentAdmin(admin.ModelAdmin):    
+class commentAdmin(MPTTModelAdmin):    
     list_display = ('username','usercomment','parentarticle')
     search_fields = ('username','usercomment',)
     ordering = ('parentarticle','publicdate',)

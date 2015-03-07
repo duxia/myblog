@@ -47,6 +47,7 @@ CKEDITOR_CONFIGS = {
             ['TextColor','BGColor'], 
             ['Maximize','ShowBlocks','-','About', 'pbckcode'],
         ),
+        'height':1000,
     }
 }
 

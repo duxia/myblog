@@ -31,15 +31,69 @@
         	globalenv.attr("title", "您的浏览器需要安装 Flash 插件").tooltip("fixTitle").tooltip("show");
         });
 	});
-}
-//评论模块初始化
-$(function(){
+	//评论模块初始化
 	$('.ds-add-emote').qqFace({
 		id : 'ds-smilies-tooltip', 
 		assign:'saytext', 
 		path:'/static/img/qqface/'	//表情存放的路径
 	});
-});
+}
+
+//评论提交验证
+function checksubmit(form){
+	if (form.message.value == ""){
+		return false;
+	}
+	var username = getCookie("username");
+	if (username){
+		$.ajax({
+			type: "POST",
+			url:'/postcomment/',
+			data:$(form).serialize(),
+			async: false,
+			error: function(request) {
+                alert("Postcomment error");
+            },
+            success: function(callbackdata) {
+            	if (callbackdata != null){
+            		console.log($('#blog_commentnums_bottom').val());
+            		var currentcomments = $('#blog_commentnums_bottom').children().get(0).innerHTML;
+            		var newcomments = parseInt(currentcomments)+ 1;
+            		$('#blog_commentnums_bottom').children().get(0).innerHTML = newcomments;
+            		$('#blog_commentnums_top').get(0).innerHTML = newcomments+'条评论';
+            		if(form.parent_id){//非一级评论
+            			var replybox = $(form).parent();
+            			if(replybox.prev().hasClass("ds-reply-active")){
+            				replybox.slideToggle(function(){
+            					$(this).remove();
+            				});//滑动隐藏后删除
+            				replybox.prev().removeClass("ds-reply-active");
+            			}
+            			var parentcomment = $('#comments_id_'+form.parent_id.value);
+            			if (parentcomment.next().length){//已有子评论
+            				$(callbackdata).appendTo(parentcomment.next());
+            			} else {//没有子评论
+            				var htmldata = '<ul class="ds-children">'+callbackdata+'</ul>';
+            				$(htmldata).appendTo(parentcomment.parent());
+            			}
+            		} else {//一级评论
+            			var commentul = $('#ds-reset').children('ul.ds-comments');
+            			if(commentul.children().first().hasClass("ds-post-placeholder")) {
+            				commentul.children().first().remove();
+            			}
+            			$(callbackdata).appendTo(commentul);
+            		}
+            		return false;
+            	}
+            }
+		});
+		form.reset();//清空表单
+		return false;//用户已登录
+	} else {
+		$("#loginmodel").modal('show');
+	}
+	return false;
+}
 
 function getCookie(cookieName) {
     var strCookie = document.cookie;
@@ -52,20 +106,6 @@ function getCookie(cookieName) {
     }
     return "";
 }
-
-function checksubmit(form){
-	if (form.message.value == ""){
-		return false;
-	}
-	var username = getCookie("username");
-	if (username){
-		return true;//用户已登录
-	} else {
-		$("#loginmodel").modal('show');
-	}
-	return false;
-}
-
 
 function checklogin(form){
 	if (form.email.value == "" || form.password.value == ""){
@@ -141,7 +181,7 @@ function checkregister(form){//提交注册表单之前验证
             		form.submit();
             		return true;
             	}
-                console.log(callbackdata);
+                //console.log(callbackdata);
             }
 		});
 	}

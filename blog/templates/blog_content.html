@@ -15,21 +15,12 @@
 	<div class="panel-body">
 		<div class="col-md-12">
 			<h1>{% if blog.title %} {{ blog.title }} {% endif %}</h1>
-			<div class="row">
-			<div class="col-md-3">
-				<small> 
-					<span class="label label-success"><span class="glyphicon glyphicon-time"></span> {{ blog.publishdate }}</span> &nbsp;
-					<span class="label label-success"><span class="glyphicon glyphicon-tag"></span>  {{ blog.articletype }}</span> &nbsp;
-				</small>
-			</div>
-			<div class="col-md-6"></div>
-			<div class="col-md-3">
-			<small>
+			<small> 
+				<span class="label label-success"><span class="glyphicon glyphicon-time"></span> {{ blog.publishdate }}</span> &nbsp;
+				<span class="label label-success"><span class="glyphicon glyphicon-tag"></span>  {{ blog.articletype }}</span> &nbsp;
 				<span class="label label-success"><span class="glyphicon glyphicon-eye-open"></span> {{ blog.clicknums }}浏览</a></span> &nbsp;
-				<span class="label label-success"><span class="glyphicon glyphicon-comment"></span> <a href="#commentsarea">{{ blog.commentnums }}条评论</a></span>
+				<span class="label label-success"><span class="glyphicon glyphicon-comment"></span> <a href="#commentsarea" id="blog_commentnums_top">{{ blog.commentnums }}条评论</a></span>
 			</small>
-			</div>
-			</div>
 			<hr>
 		</div>
 		<div class="col-md-12">{{ blog.content|safe }}</div>
@@ -54,23 +45,22 @@
 		{% load mptt_tags %}
 			<div class="ds-thread" id="ds-thread">
 				<div id="ds-reset">
-					{% if not nodes %}
-					<ul class="ds-comments">
-						<li class="ds-post ds-post-placeholder">还没有评论，快来抢个沙发吧~~</li>
-					</ul>
-					{% endif %}
-					<div class="ds-comments-info">
+					<div class="ds-comments-info"><!-- 评论数栏 -->
 						<ul class="ds-comments-tabs">
 							<li class="ds-tab">
-								<a class="ds-comments-tab-duoshuo ds-current"><span class="ds-highlight">{{ blog.commentnums }}</span>条评论</a>
+								<a class="ds-comments-tab-duoshuo ds-current" id="blog_commentnums_bottom"><span class="ds-highlight">{{ blog.commentnums }}</span>条评论</a>
 							</li>
 						</ul>
 					</div>
+					
 					<ul class="ds-comments">
+					{% if not nodes %}
+						<li class="ds-post ds-post-placeholder">还没有评论，快来抢个沙发吧~~</li>
+					{% endif %}
 					{% recursetree nodes %}
 						<li class="ds-post">
 							<!-- 一级评论 -->
-							<div class="ds-post-self" id="{{ node.id }}">
+							<div class="ds-post-self" id="comments_id_{{ node.id }}">
 								<div class="ds-avatar">
 									{% if node.usericon %}
 									<img src="{{ node.usericon }}"></img>
@@ -142,7 +132,7 @@
 					<div class="ds-social-links">
 						<ul class="ds-service-list">
 							<li>
-								<a class="ds-service-link ds-qq" href="https://graph.qq.com/oauth2.0/authorize">QQ登录</a>
+								<span id="qqLoginBtn" ></span>
 							</li>
 						</ul>
 					</div>
@@ -344,6 +334,15 @@
 		
 	</div>
 </div>
+<script type="text/javascript" src="http://qzonestyle.gtimg.cn/qzone/openapi/qc_loader.js" data-appid="101196913" data-redirecturi="https://blog-teaorcoffee.rhcloud.com/account/oauth/qq" charset="utf-8" ></script>
+<script type="text/javascript">
+ QC.Login({
+  btnId : "qqLoginBtn",//插入按钮的html标签id
+  size : "C_S",//按钮尺寸
+  scope : "get_user_info",//展示授权，全部可用授权可填 all
+  display : "pc"//应用场景，可选
+ });
+</script>
 <script src="/static/zeroclipboard/ZeroClipboard.js"></script>
 <script type="text/javascript" src="/static/js/jquery.qqFace.js"></script>
 <script src="/static/js/myscript.js"></script>
@@ -364,7 +363,7 @@ $(document).ready(function(){
 });
 
 function insertreplybox(parent) {
-	foot = $("#"+parent).children("div.ds-comment-body").children("div.ds-comment-footer");
+	foot = $("#comments_id_"+parent).children("div.ds-comment-body").children("div.ds-comment-footer");
 	if ($(foot).hasClass("ds-reply-active")) {
 		$(foot).next().slideToggle(function(){
 			$(this).remove();

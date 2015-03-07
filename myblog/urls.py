@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     url(r'^blog/tags/(?P<tags>\w+\+*)/$','blog.views.handletags',name='showTag'),
     url(r'^account/verifycode/$','blog.views.handleverifycode',name='verifyCode'),
     url(r'^account/verifyemail/$','blog.views.handleverifyemail',name='verifyEmail'),
+    url(r'^postcomment/$','blog.views.postcomment',name='postcomment'),
     url(r'^account/oauth/(?P<sitename>\w+)/$','blog.views.callback',name='callback'),
     
     url(r'^account/login/?$', 'blog.views.login', name="login"),
