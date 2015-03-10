@@ -44,8 +44,7 @@ function checksubmit(form){
 	if (form.message.value == ""){
 		return false;
 	}
-	var username = getCookie("username");
-	if (username){
+	if (form.user_id.value){//用户已经登录
 		$.ajax({
 			type: "POST",
 			url:'/postcomment/',
@@ -56,7 +55,7 @@ function checksubmit(form){
             },
             success: function(callbackdata) {
             	if (callbackdata != null){
-            		console.log($('#blog_commentnums_bottom').val());
+            		//console.log($('#blog_commentnums_bottom').val());
             		var currentcomments = $('#blog_commentnums_bottom').children().get(0).innerHTML;
             		var newcomments = parseInt(currentcomments)+ 1;
             		$('#blog_commentnums_bottom').children().get(0).innerHTML = newcomments;
@@ -106,15 +105,82 @@ function getCookie(cookieName) {
     }
     return "";
 }
-
+//检查登录
 function checklogin(form){
 	if (form.email.value == "" || form.password.value == ""){
-		alert("用户名或密码不能为空!");
+		showregistermsg($(form.email),"has-error","用户名或密码不能为空!");
+		showregistermsg($(form.password),"has-error","用户名或密码不能为空!");
 		return false;
 	}
-	return true;
+	$.ajax({
+		type: "POST",
+		url:'/account/login/',
+		data:$(form).serialize(),
+		async: false,
+		error: function(request) {
+            alert("Connection error");
+        },
+        success: function(callbackdata) {
+        	if (callbackdata == '1'){
+        		showregistermsg($(form.email),"has-error","请输入邮箱和密码!");
+        		return true;
+        	} else if (callbackdata == '2'){
+        		showregistermsg($(form.email),"has-error","无效的邮箱,请重新输入!");
+        		return true;
+        	} else if (callbackdata == '3'){
+        		showregistermsg($(form.password),"has-error","密码错误!");
+        		return true;
+        	} else {
+        		$("#loginmodel").modal('hide');
+        		$('#loginarea').nextAll().remove();
+        		$(callbackdata).appendTo($('#loginarea').parent());
+        		$('.ds-add-emote').qqFace({
+        			id : 'ds-smilies-tooltip', 
+        			assign:'saytext', 
+        			path:'/static/img/qqface/'	//表情存放的路径
+        		});
+        		//location.reload();
+    		return true;
+        	}
+        }
+	});
+	form.reset();//清空表单
+	return false;
 }
-
+function checklogout(form){
+	$.ajax({
+		type: "POST",
+		url:'/account/logout/',
+		data:$(form).serialize(),
+		async: false,
+		error: function(request) {
+            alert("Connection error");
+        },
+        success: function(callbackdata) {
+        	if (callbackdata == 'logoutfail'){
+        		alert('注销失败!')
+        		return true;
+        	} else {
+        		$('#loginarea').nextAll().remove();
+        		$(callbackdata).appendTo($('#loginarea').parent());
+        		$('.ds-add-emote').qqFace({
+        			id : 'ds-smilies-tooltip', 
+        			assign:'saytext', 
+        			path:'/static/img/qqface/'	//表情存放的路径
+        		});
+//        		QC.Login({
+//        			  btnId : "qqLoginBtn",//插入按钮的html标签id
+//        			  size : "C_S",//按钮尺寸
+//        			  scope : "get_user_info",//展示授权，全部可用授权可填 all
+//        			  display : "pc"//应用场景，可选
+//        			 });
+        		//location.reload();
+        		return true;
+        	}
+        }
+	});
+	return false;
+}
 
 //检查注册信息
 function showregistermsg(objself,classname,msginfo){
@@ -205,7 +271,7 @@ function checkemailvalid(inputobj){
 }
 function checkpasswordvalid(inputobj){
 	if (inputobj.value){
-		var prevInputobj = $(inputobj).parent().parent().prev().find("#inputPassword");//前一次输入的密码
+		var prevInputobj = $(inputobj).parent().parent().prev().find("#inputregisterPassword");//前一次输入的密码
 		if(inputobj.value != prevInputobj.val()){
 			showregistermsg($(inputobj),"has-error","两次密码不一致!");
 			//alert("两次输入不一致");

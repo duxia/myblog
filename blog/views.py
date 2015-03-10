@@ -2,8 +2,7 @@
 from django.shortcuts import render, render_to_response
 from blog.models import article, articletypeList, comment
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.http.response import Http404, HttpResponseRedirect, HttpResponse,\
-    JsonResponse
+from django.http.response import Http404, HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.template.context import RequestContext
 from PIL import Image
@@ -206,9 +205,7 @@ def handleblogcontent(request,id=''):
             try:
                 user = _login()
                 request.session['uid'] = user.user_id
-                response = HttpResponseRedirect(reverse('showArticle',args=[id])+'#loginarea')
-                response.set_cookie('username', user.user_id,)
-                return response
+                return HttpResponseRedirect(reverse('showArticle',args=[id])+'#loginarea')
             except RegisterLoginError as e:
                 return render_to_response(
                     'blog_content.html',
@@ -229,9 +226,7 @@ def handleblogcontent(request,id=''):
             except:
                 pass
             finally:
-                response = HttpResponseRedirect(reverse('showArticle',args=[id])+'#loginarea')
-                response.delete_cookie('username')
-                return response
+                return HttpResponseRedirect(reverse('showArticle',args=[id])+'#loginarea')
         
         if 'registeremail' in request.POST and request.POST['registeremail']: #注册
             def _register(): #注册用户
@@ -266,9 +261,7 @@ def handleblogcontent(request,id=''):
             try:
                 user = _register()
                 request.session['uid'] = user.user_id
-                response = HttpResponseRedirect(reverse('showArticle',args=[id])+'#loginarea')
-                response.set_cookie('username', user.user_id,)
-                return response
+                return HttpResponseRedirect(reverse('showArticle',args=[id])+'#loginarea')
             except RegisterLoginError as e:
                 return render_to_response(
                     'blog_content.html',
@@ -330,13 +323,13 @@ def handleverifyemail(request):
 @csrf_exempt
 def postcomment(request):
     if request.method == 'POST':
-        if 'message' in request.POST and request.POST['message'] and request.siteuser: #提交评论
+        if 'message' in request.POST and request.POST['message'] and request.POST['user_id']: #提交评论
             message = request.POST['message']
             message = re.sub(r'\<', r'&lt;', message) #正则处理表情,换行等
             message = re.sub(r'\>', r'&gt;', message)
             message = re.sub(r'\n', r'<br/>', message)
             message = re.sub(r'\[em_([0-9]*)\]', r'<img src="/static/img/qqface/\1.gif" border="0" />', message)
-            usrinfo = UserInfo.objects.get(user_id=request.siteuser.id)
+            usrinfo = UserInfo.objects.get(user_id=request.POST['user_id'])
             usrname = usrinfo.username
             usricon = usrinfo.avatar
             parentarticleId = request.POST['article_id']
@@ -356,53 +349,43 @@ def postcomment(request):
 def handletest(request):
     return render_to_response('blog_main.html')
 
+@csrf_exempt
 def login(request):
-    print request.path
-    print request.siteuser
-    if request.siteuser:
-        # already logged in
-        return HttpResponseRedirect(reverse('home'))
-    
-    if request.method == 'GET':
-        return render_to_response(
-            'login.html',
-            context_instance=RequestContext(request)
-        )
-    
-    def _login():
-        email = request.POST.get('email', None)
-        password = request.POST.get('password', None)
-        if not email or not password:
-            raise RegisterLoginError("Fill email and password")
+    if request.method == 'POST':
+        if 'email' in request.POST and request.POST['email']: #提交登录(本地用户)
+            def _login():
+                email = request.POST.get('email', None)
+                password = request.POST.get('password', None)
+                if not email or not password:
+                    raise RegisterLoginError("1") #请输入邮箱和密码!
+                
+                if not UserAuth.objects.filter(email=email).exists():
+                    raise RegisterLoginError("2") #无效的账户,请重新输入!
+                
+                user = UserAuth.objects.get(email=email)
+                if not check_password(password,user.password):
+                    raise RegisterLoginError("3") #密码错误!
+                return user
+            try:
+                user = _login()
+                request.session['uid'] = user.user_id
+                loginuser = UserInfo.objects.get(user_id=user.user_id)
+                request_from =  request.META.get('HTTP_REFERER',"/").split('/')
+                length = len(request_from)
+                return render_to_response('login.html',
+                                          {'loginuser':loginuser,'blog_id':request_from[length-2]},
+                                          context_instance=RequestContext(request))
+            except RegisterLoginError as e:
+                return HttpResponse(e)          
         
-        if not UserAuth.objects.filter(email=email, password=password).exists():
-            raise RegisterLoginError("Invalid account")
-        
-        user = UserAuth.objects.get(email=email, password=password)
-        return user
-    
-    try:
-        user = _login()
-        request.session['uid'] = user.user_id
-        username = UserInfo.objects.get(user_id=user.user_id).username
-        response = HttpResponseRedirect(reverse('home'))
-        response.set_cookie('username', username, 3600,)
-        return response
-    except RegisterLoginError as e:
-        return render_to_response(
-            'login.html',
-            {'error_msg': e},
-            context_instance=RequestContext(request)
-        )
-
+@csrf_exempt
 def logout(request):
     try:
         del request.session['uid']
+        response = render_to_response('logout.html',context_instance=RequestContext(request))
     except:
-        pass
+        response = HttpResponse('logoutfail')
     finally:
-        response = HttpResponseRedirect(reverse('home'))
-        response.delete_cookie('username')
         return response
 
 def login_error(request):

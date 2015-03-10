@@ -50,7 +50,7 @@
 						{% endif %}
 					</a>
 					<form method="post" onsubmit="return checksubmit(this)">{% csrf_token %}
-						<input type="hidden" name="article_id" value="{{ blog_id }}"></input>
+						<input type="hidden" name="article_id" value="{{ blog.id }}"></input>
 						<input type="hidden" name="user_id" value="{{ loginuser.user_id }}"></input>
 						<div class="ds-textarea-wrapper ds-rounded-top">
 							<textarea name="message" id="saytext" class="saytext" placeholder="说点什么吧..."></textarea>
@@ -84,7 +84,7 @@
 						{% endif %}
 						toinsert += '</a><form method="post" onsubmit="return checksubmit(this)">';
 						toinsert += "{% csrf_token %}";
-						toinsert += '<input type="hidden" name="article_id" value="{{ blog_id }}"></input>';
+						toinsert += '<input type="hidden" name="article_id" value="{{ blog.id }}"></input>';
 						toinsert += '<input type="hidden" name="parent_id" value="'+parent+'"></input>';
 						toinsert += '<input type="hidden" name="user_id" value="{{ loginuser.user_id }}"></input>';
 						toinsert += '<div class="ds-textarea-wrapper ds-rounded-top"><textarea name="message" id="childsaytext" class="saytext" placeholder="说点什么吧..."></textarea></div><div class="ds-post-toolbar"><div class="ds-post-options ds-gradient-bg"><span class="ds-sync"></span></div><button class="ds-post-button" type="submit">发布</button><div class="ds-toolbar-buttons"><a class="ds-toolbar-button ds-add-emote" title="插入表情"></a></div></div></form></div>'; 
