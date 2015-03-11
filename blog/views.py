@@ -166,118 +166,6 @@ def handleblogcontent(request,id=''):
     if request.siteuser: #取出登录的用户
         loginuser = UserInfo.objects.get(user_id=request.siteuser.id)
     
-    if request.method == 'POST':
-#         if 'message' in request.POST and request.POST['message']: #提交评论(同步提交)
-#             message = request.POST['message']
-#             message = re.sub(r'\<', r'&lt;', message) #正则处理表情,换行等
-#             message = re.sub(r'\>', r'&gt;', message)
-#             message = re.sub(r'\n', r'<br/>', message)
-#             message = re.sub(r'\[em_([0-9]*)\]', r'<img src="/static/img/qqface/\1.gif" border="0" />', message)
-#             usrinfo = UserInfo.objects.get(user_id=request.siteuser.id)
-#             usrname = usrinfo.username
-#             usricon = usrinfo.avatar
-#             parentcomment = None
-#             if 'parent_id' in request.POST and request.POST['parent_id']:
-#                 parent_id = request.POST['parent_id']
-#                 parentcomment = comment.objects.get(id=parent_id)
-#              
-#             comment.objects.create(username=usrname,usericon=usricon,usercomment=message,
-#                                    parentarticle=article.objects.get(id=request.POST['article_id']),
-#                                    parent=parentcomment,)
-#             blogobject.commentnums += 1 #评论数+1
-#             blogobject.save()
-#             return HttpResponseRedirect(reverse('showArticle',args=id)+'#commentsarea') #防止重复提交
-        
-        if 'email' in request.POST and request.POST['email']: #提交登录
-            def _login():
-                email = request.POST.get('email', None)
-                password = request.POST.get('password', None)
-                if not email or not password:
-                    raise RegisterLoginError("请输入邮箱和密码!")
-                
-                if not UserAuth.objects.filter(email=email).exists():
-                    raise RegisterLoginError("无效的账户,请重新输入!")
-                
-                user = UserAuth.objects.get(email=email)
-                if not check_password(password,user.password):
-                    raise RegisterLoginError("密码错误!")
-                return user
-            try:
-                user = _login()
-                request.session['uid'] = user.user_id
-                return HttpResponseRedirect(reverse('showArticle',args=[id])+'#loginarea')
-            except RegisterLoginError as e:
-                return render_to_response(
-                    'blog_content.html',
-                    {'blog':blogobject,
-                    'articletypes':articletypes,
-                    'toparticlelist':toparticlelist,
-                    'topviewlist':topviewlist,
-                    'topcommentlist':topcommentlist,
-                    'preArticle':preArticle,
-                    'nextArticle':nextArticle,
-                    'nodes':nodes,'error_msg': e,},
-                    context_instance=RequestContext(request)
-                )
-                
-        if 'userlogout' in request.POST and request.POST['userlogout']: #退出
-            try:
-                del request.session['uid']
-            except:
-                pass
-            finally:
-                return HttpResponseRedirect(reverse('showArticle',args=[id])+'#loginarea')
-        
-        if 'registeremail' in request.POST and request.POST['registeremail']: #注册
-            def _register(): #注册用户
-                email = request.POST.get('registeremail', None)
-                password = request.POST.get('registerpassword', None)
-                username = request.POST.get('registernickname', None)
-                if not email or not password:
-                    raise RegisterLoginError("请输入邮箱和密码!")
-                
-                if UserAuth.objects.filter(email=email).exists():
-                    raise RegisterLoginError("该邮箱已经被使用，请重新输入!")
-                
-                if not username:
-                    raise RegisterLoginError("用户名不能为空!")
-                usericon = None
-                if 'inputfile' in request.FILES and request.FILES['inputfile']: #如果用户上传了头像
-                    image = request.FILES['inputfile']
-                    img = Image.open(image)
-                    img.thumbnail((50,50),Image.ANTIALIAS)
-                    name = os.path.splitext(image.name)[0]+ str(hash(time.time())) + os.path.splitext(image.name)[1] #初步防止文件名重复
-                    usericon = '/media/usericons/'+name #用户头像的相对地址(用于前端显示)
-                    pathname = os.path.join(settings.MEDIA_ROOT,'usericons',name) #用户目录的绝对地址(用于存储)
-                    img.save(pathname)
-                password = make_password(password,None,'pbkdf2_sha256')
-                user = UserAuth.objects.create(email=email, password=password)
-                if usericon:
-                    UserInfo.objects.create(user_id=user.user_id, username=username,avatar=usericon)
-                else:
-                    UserInfo.objects.create(user_id=user.user_id, username=username)
-                return user
-              
-            try:
-                user = _register()
-                request.session['uid'] = user.user_id
-                return HttpResponseRedirect(reverse('showArticle',args=[id])+'#loginarea')
-            except RegisterLoginError as e:
-                return render_to_response(
-                    'blog_content.html',
-                    {'blog':blogobject,
-                    'articletypes':articletypes,
-                    'toparticlelist':toparticlelist,
-                    'topviewlist':topviewlist,
-                    'topcommentlist':topcommentlist,
-                    'preArticle':preArticle,
-                    'nextArticle':nextArticle,
-                    'nodes':nodes,
-                    'recentcomments':recentcomments,
-                    'verifyform':verifyform,
-                    'error_msg': e,},
-                    context_instance=RequestContext(request)
-                )
     blogobject.clicknums += 1 #浏览数+1
     blogobject.save()
     return render_to_response('blog_content.html',
@@ -346,9 +234,6 @@ def postcomment(request):
             return render_to_response('comment.html',{'node':currentcomment},context_instance=RequestContext(request))
     pass
 
-def handletest(request):
-    return render_to_response('blog_main.html')
-
 @csrf_exempt
 def login(request):
     if request.method == 'POST':
@@ -376,7 +261,7 @@ def login(request):
                                           {'loginuser':loginuser,'blog_id':request_from[length-2]},
                                           context_instance=RequestContext(request))
             except RegisterLoginError as e:
-                return HttpResponse(e)          
+                return HttpResponse(e)
         
 @csrf_exempt
 def logout(request):
@@ -388,69 +273,51 @@ def logout(request):
     finally:
         return response
 
-def login_error(request):
-    return HttpResponse("OAuth Failure!")
-
+@csrf_exempt
 def register(request):
-    if request.method == 'GET':
-        return render_to_response(
-            'register.html', context_instance=RequestContext(request)
-        )
-    
-    def _register():
-        email = request.POST.get('email', None)
-        password = request.POST.get('password', None)
-        if not email or not password:
-            raise RegisterLoginError("Fill email and password")
-        
-        if UserAuth.objects.filter(email=email).exists():
-            raise RegisterLoginError("Email has been taken")
-        
-        user = UserAuth.objects.create(email=email, password=password)
-        return user
-    
-    try:
-        user = _register()
-        request.session['uid'] = user.user_id
-        return HttpResponseRedirect(reverse('register_step_2'))
-    except RegisterLoginError as e:
-        return render_to_response(
-            'register.html',
-            {'error_msg': e},
-            context_instance=RequestContext(request)
-        )
-
-def register_step_2(request):
-    if not request.siteuser:
-        return HttpResponseRedirect(reverse('home'))
-    
-    if request.method == 'GET':
-        return render_to_response(
-            'register_step_2.html',
-            {'email': UserAuth.objects.get(user_id=request.siteuser.id).email},
-            context_instance=RequestContext(request)
-        )
-    
-    def _register_step_2():
-        username = request.POST.get('username', None)
-        if not username:
-            raise RegisterLoginError("Fill in username")
-        
-        UserInfo.objects.create(user_id=request.siteuser.id, username=username)
-        
-    try:
-        _register_step_2()
-        return HttpResponseRedirect(reverse('home'))
-    except RegisterLoginError as e:
-        return render_to_response(
-            'register_step_2.html',
-            {
-                'email': UserAuth.objects.get(user_id=request.siteuser.id).email,
-                'error_msg': e
-            },
-            context_instance=RequestContext(request)
-        )
-
+    if request.method == 'POST':
+        if 'registeremail' in request.POST and request.POST['registeremail']: #注册
+            def _register(): #注册用户
+                email = request.POST.get('registeremail', None)
+                password = request.POST.get('registerpassword', None)
+                username = request.POST.get('registernickname', None)
+                if not email or not password:
+                    raise RegisterLoginError("1") #请输入邮箱和密码!
+                
+                if UserAuth.objects.filter(email=email).exists():
+                    raise RegisterLoginError("2") #该邮箱已经被使用，请重新输入!
+                
+                if not username:
+                    raise RegisterLoginError("3") #用户名不能为空!
+                usericon = None
+                if 'inputfile' in request.FILES and request.FILES['inputfile']: #如果用户上传了头像
+                    image = request.FILES['inputfile']
+                    img = Image.open(image)
+                    img.thumbnail((50,50),Image.ANTIALIAS)
+                    name = os.path.splitext(image.name)[0]+ str(hash(time.time())) + os.path.splitext(image.name)[1] #初步防止文件名重复
+                    usericon = '/media/usericons/'+name #用户头像的相对地址(用于前端显示)
+                    pathname = os.path.join(settings.MEDIA_ROOT,'usericons',name) #用户目录的绝对地址(用于存储)
+                    img.save(pathname)
+                password = make_password(password,None,'pbkdf2_sha256')
+                user = UserAuth.objects.create(email=email, password=password)
+                if usericon:
+                    UserInfo.objects.create(user_id=user.user_id, username=username,avatar=usericon)
+                else:
+                    UserInfo.objects.create(user_id=user.user_id, username=username)
+                return user
+              
+            try:
+                user = _register()
+                request.session['uid'] = user.user_id
+                loginuser = UserInfo.objects.get(user_id=user.user_id)
+                request_from =  request.META.get('HTTP_REFERER',"/").split('/')
+                length = len(request_from)
+                return render_to_response('login.html',
+                                          {'loginuser':loginuser,'blog_id':request_from[length-2]},
+                                          context_instance=RequestContext(request))
+            except RegisterLoginError as e:
+                return HttpResponse(e)
+    pass
 
 #分页类
 class PaginatorPro(Paginator):

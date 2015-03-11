@@ -383,9 +383,6 @@ $(document).ready(function(){
   $("form").delegate("#id_captcha_1","focus",function(data){
   	checkregistererrormsg(data.target);
   });
-  {% if error_msg %}
-  location.hash="#loginarea";
-  {% endif %}
 });
 
 </script>

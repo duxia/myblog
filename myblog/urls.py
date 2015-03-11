@@ -17,11 +17,8 @@ urlpatterns = patterns('',
     
     url(r'^account/login/?$', 'blog.views.login', name="login"),
     url(r'^account/logout/?$', 'blog.views.logout', name="logout"),
-    url(r'^account/login/error/?$', 'blog.views.login_error', name="login_error"),
     url(r'^account/register/?$', 'blog.views.register', name="register"),
-    url(r'^account/register2/?$', 'blog.views.register_step_2', name="register_step_2"),
         
-    url(r'^test/$','blog.views.handletest'),
     url(r'^captcha/', include('captcha.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^ckeditor/', include('ckeditor.urls')),

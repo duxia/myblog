@@ -42,10 +42,15 @@ class articletypeListAdmin(admin.ModelAdmin):
         obj.save()
         
 class commentAdmin(MPTTModelAdmin):    
-    list_display = ('username','usercomment','parentarticle')
+    list_display = ('username','Usericon','usercomment','parentarticle')
     search_fields = ('username','usercomment',)
     ordering = ('parentarticle','publicdate',)
     fields = ('username','usercomment','parentarticle')
+    
+    def Usericon(self,obj):
+        return '<img src="%s" />' % obj.usericon
+    Usericon.allow_tags = True
+    
     def delete_model(self, request, obj):
         parentarticle = article.objects.get(title=obj.parentarticle)
         parentarticle.commentnums = F('commentnums') - 1

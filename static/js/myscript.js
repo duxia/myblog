@@ -245,8 +245,40 @@ function checkregister(form){//提交注册表单之前验证
             		showregistermsg($('#verifycodearea').children('#id_captcha_1'),"has-error","验证码错误!");
             		return false;
             	} else if (callbackdata == 'valid'){
-            		form.submit();
-            		return true;
+            		//form.submit();
+            		$.ajax({
+            			type: "POST",
+            			url:'/account/register/',
+            			data:$(form).serialize(),
+            			async: false,
+            			error: function(request) {
+                            alert("Connection error");
+                        },
+                        success: function(callbackdata) {
+                        	if (callbackdata == '1'){
+                        		showregistermsg($(form.registeremail),"has-error","请输入邮箱和密码!");
+                        		return true;
+                        	} else if (callbackdata == '2'){
+                        		showregistermsg($(form.registeremail),"has-error","该邮箱已经被使用，请重新输入!");
+                        		return true;
+                        	} else if (callbackdata == '3'){
+                        		showregistermsg($(form.registernickname),"has-error","用户名不能为空!");
+                        		return true;
+                        	} else {
+                        		$("#registermodel").modal('hide');
+                        		$('#loginarea').nextAll().remove();
+                        		$(callbackdata).appendTo($('#loginarea').parent());
+                        		$('.ds-add-emote').qqFace({
+                        			id : 'ds-smilies-tooltip', 
+                        			assign:'saytext', 
+                        			path:'/static/img/qqface/'	//表情存放的路径
+                        		});
+                        		form.reset();//清空表单
+                        		return true;
+                        	}
+                        }
+            		});
+            		
             	}
                 //console.log(callbackdata);
             }
