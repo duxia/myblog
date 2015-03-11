@@ -371,20 +371,6 @@
 		
 	</div>
 </div>
-<a id="scriptarea"></a>
-<script type="text/javascript" src="http://qzonestyle.gtimg.cn/qzone/openapi/qc_loader.js" data-appid="101196913" data-redirecturi="https://blog-teaorcoffee.rhcloud.com/account/oauth/qq" charset="utf-8" ></script>
-{% if not loginuser %}
-<script type="text/javascript">
- QC.Login({
-  btnId : "qqLoginBtn",//插入按钮的html标签id
-  size : "C_S",//按钮尺寸
-  scope : "get_user_info",//展示授权，全部可用授权可填 all
-  display : "pc"//应用场景，可选
- });
-</script>
-{% endif %}
-<script src="/static/zeroclipboard/ZeroClipboard.js"></script>
-<script type="text/javascript" src="/static/js/jquery.qqFace.js"></script>
 <script src="/static/js/myscript.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
@@ -405,3 +391,19 @@ $(document).ready(function(){
 </script>
 {% endblock %}
 
+{% block blogscript %}
+<a id="scriptarea"></a>
+<script src="/static/zeroclipboard/ZeroClipboard.js"></script>
+<script type="text/javascript" src="/static/js/jquery.qqFace.js"></script>
+<script type="text/javascript" src="http://qzonestyle.gtimg.cn/qzone/openapi/qc_loader.js" data-appid="101196913" data-redirecturi="https://blog-teaorcoffee.rhcloud.com/account/oauth/qq" charset="utf-8" ></script>
+{% if not loginuser %}
+<script type="text/javascript">
+ QC.Login({
+  btnId : "qqLoginBtn",//插入按钮的html标签id
+  size : "C_S",//按钮尺寸
+  scope : "get_user_info",//展示授权，全部可用授权可填 all
+  display : "pc"//应用场景，可选
+ });
+</script>
+{% endif %}
+{% endblock %}

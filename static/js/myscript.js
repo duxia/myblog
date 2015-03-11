@@ -31,6 +31,7 @@
         	globalenv.attr("title", "您的浏览器需要安装 Flash 插件").tooltip("fixTitle").tooltip("show");
         });
 	});
+	hljs.initHighlightingOnLoad();
 	//评论模块初始化
 	$('.ds-add-emote').qqFace({
 		id : 'ds-smilies-tooltip', 

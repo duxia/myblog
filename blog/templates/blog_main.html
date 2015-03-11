@@ -173,8 +173,8 @@
                   				<p style="text-overflow:ellipsis;overflow:hidden;word-wrap:break-word;">
 	                  				<a href="{% url 'showArticle' comment.parentarticle__id %}">{{ comment.parentarticle__title }}</a>
 	                  			</p>
-	                  			<p style="text-overflow:ellipsis;overflow:hidden;height: 60px;word-wrap:break-word;">
-	                  				<span class="label label-default">{{ comment.username }}</span>:<small>{{ comment.usercomment|safe }}</small>
+	                  			<p style="text-overflow:ellipsis;overflow:hidden;max-height:70px;word-wrap:break-word;">
+	                  				<small><span class="label label-default">{{ comment.username }}</span></small>:<small>{{ comment.usercomment|safe }}</small>
 	                  			</p>
                   			</li>
                   			{% endfor %}
@@ -183,6 +183,9 @@
 				</div>
 			</div>
 		</div>
+		{% block blogscript %}
+		
+		{% endblock %}
 	</div>
 </div>
 {% endblock %}

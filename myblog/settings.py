@@ -29,10 +29,11 @@ ALLOWED_HOSTS = []
 #ckeditor
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-CKEDITOR_UPLOAD_PATH = "article_images"
-
+CKEDITOR_UPLOAD_PATH = "uploads/"
+#CKEDITOR_JQUERY_URL = "/static/jquery/jquery.min.js"
 CKEDITOR_CONFIGS = {
     'default': {
+        'extraPlugins' : 'clipboard,lineutils,widget,dialog,codesnippet',
         'toolbar': (
             ['div','Source','-','Save','NewPage','Preview','-','Templates'], 
             ['Cut','Copy','Paste','PasteText','PasteFromWord','-','Print','SpellChecker','Scayt'], 
@@ -42,19 +43,14 @@ CKEDITOR_CONFIGS = {
             ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'], 
             ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'], 
             ['Link','Unlink','Anchor'], 
-            ['Image','Flash','Table','HorizontalRule','Smiley','SpecialChar','PageBreak'], 
-            ['Styles','Format','Font','FontSize'], 
+            ['CodeSnippet','Image','Flash','Table','HorizontalRule','Smiley','SpecialChar','PageBreak'], 
+            ['Styles','Format','Font','FontSize'],
             ['TextColor','BGColor'], 
             ['Maximize','ShowBlocks','-','About', 'pbckcode'],
         ),
         'height':1000,
-    }
+    },
 }
-
-#duoshuo setting
-DUOSHUO_SECRET = 'xxxxx'
-DUOSHUO_SHORT_NAME = 'xxxxx'
-# Application definition
 
 INSTALLED_APPS = (
     'django_admin_bootstrapped.bootstrap3',#bootstrap admin
