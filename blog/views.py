@@ -1,19 +1,15 @@
 #coding=utf-8
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render_to_response
 from blog.models import article, articletypeList, comment
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.http.response import Http404, HttpResponseRedirect, HttpResponse
-from django.core.urlresolvers import reverse
+from django.http.response import Http404, HttpResponse
 from django.template.context import RequestContext
 from PIL import Image
 
 
-from social_login.models import SiteUser
-
 # as same as SiteUser, import the following two just for this example
 # to get the siet_name_zh
 from socialoauth import SocialSites
-from socialoauth.utils import import_oauth_class
 from myblog.settings import SOCIALOAUTH_SITES
 from socialoauth.exception import SocialAPIError
 from myblog import settings
