@@ -33,7 +33,7 @@ CKEDITOR_UPLOAD_PATH = "uploads/"
 #CKEDITOR_JQUERY_URL = "/static/jquery/jquery.min.js"
 CKEDITOR_CONFIGS = {
     'default': {
-        'extraPlugins' : 'clipboard,lineutils,widget,dialog,codesnippet',
+        'extraPlugins' : 'clipboard,lineutils,widget,dialog,codesnippet,lineheight',
         'toolbar': (
             ['div','Source','-','Save','NewPage','Preview','-','Templates'], 
             ['Cut','Copy','Paste','PasteText','PasteFromWord','-','Print','SpellChecker','Scayt'], 
@@ -44,7 +44,7 @@ CKEDITOR_CONFIGS = {
             ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'], 
             ['Link','Unlink','Anchor'], 
             ['CodeSnippet','Image','Flash','Table','HorizontalRule','Smiley','SpecialChar','PageBreak'], 
-            ['Styles','Format','Font','FontSize'],
+            ['Styles','Format','Font','FontSize','lineheight'],
             ['TextColor','BGColor'], 
             ['Maximize','ShowBlocks','-','About', 'pbckcode'],
         ),
